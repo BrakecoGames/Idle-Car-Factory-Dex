@@ -121,3 +121,17 @@ Volgende focus: retentie (prestige-systeem).
 - **Verbetering:** nieuwe koopmodus **NEXT** naast ×1/×10/MAX: koopt precies tot de volgende mijlpaal (na de laatste mijlpaal: +1).
 - **Bestanden:** `index.html`, `js/ui.js`, `js/game.js`
 - **Tests:** Node-unit-check (lv 7 → 10 → volgende 15; na lv 400 → 1), screenshots paneelkop staand en liggend (past), playtest.
+
+## Iteratie 8 — Late-game plateau: nieuw merk voorstellen
+
+- **Probleem:** 90-minutensim toont dat een run na ~50 min (bot; echte spelers later) volledig stagneert: stations-upgrades zijn onbetaalbaar en de doorvoer zit aan het plafond, dus inkomen blijft vlak tot de Hypercar ($200T). Spelers zien niet dat een nieuw merk dan veel oplevert (±316 ⭐ = +3160%).
+- **Verbetering:** de "volgende doel"-kaart stelt *Start a new brand: +N ⭐* voor zodra de herstart de bonus minstens verdubbelt én het volgende doel meer dan 20× het huidige geld kost.
+- **Bestanden:** `js/ui.js`
+- **Tests:** headless check van `nextUnlock()` in late game (voorstel verschijnt) en vroege run (normaal doel), playtest.
+
+## Iteratie 9 — Performance-meting en lekcontrole
+
+- **Probleem:** performance alleen globaal bekend; geen herhaalbare meting.
+- **Verbetering:** `tools/perftest.js` meet JS-tijd per frame in een volle fabriek (4 lijnen, 72 auto's) en controleert op lekken over 20 000 frames met modelwissels; `CFT.Render.stats()` toont nu ook geometrieën, texturen, scène-objecten en auto-meshes.
+- **Resultaat (gemeten):** logica 0,02 ms, rendering (CPU-kant) ~2,0–2,5 ms, UI 0,13 ms per frame; 146–150 draw calls, ~105K driehoeken; heap 16–21 MB. Lekcontrole: objecten (155), texturen (9) en auto-meshes stabiel; geometrieën groeien alleen tot de begrensde cache van automodellen (≤ 7×8×2). **Geen optimalisatie nodig** — ruim binnen 16,7 ms. GPU-tijd en echte FPS zijn in de software-renderer niet meetbaar; test op een echte telefoon.
+- **Bestanden:** `tools/perftest.js`, `js/render3d.js` (alleen `stats()`)

@@ -1025,7 +1025,7 @@
     drawOverlay(dt);
     trackQuality(dt);
   };
-  R.stats = () => ({ calls: renderer.info.render.calls, tris: renderer.info.render.triangles, quality: quality.level, fps: R.fps });
+  R.stats = () => ({ calls: renderer.info.render.calls, tris: renderer.info.render.triangles, geos: renderer.info.memory.geometries, texs: renderer.info.memory.textures, objs: scene.children.length, cars: carMeshes.size, quality: quality.level, fps: R.fps });
 
   // ================= Voorbeeldplaatjes van modellen (klein offscreen 3D-beeld) =================
   let pv = null;

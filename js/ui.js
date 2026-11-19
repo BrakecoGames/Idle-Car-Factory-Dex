@@ -459,6 +459,11 @@
     const tech = CFT.TECH.filter(t => !s.tech[t.id] && G.reqMet(t.req)).sort((a, b) => a.cost - b.cost)[0];
     if (tech) cands.push({ icon: tech.icon, text: tech.name, cost: tech.cost, tab: 'upgrades' });
     cands.sort((a, b) => a.cost - b.cost);
+    // nieuw merk voorstellen als het je bonus minstens verdubbelt en het volgende doel nog ver weg is
+    const gain = G.prestigeGain();
+    if (G.canPrestige() && gain >= Math.max(1, s.prestige.stars) && (!cands[0] || cands[0].cost > s.money * 20)) {
+      return { icon: '⭐', text: `Start a new brand: +${f(gain)} ⭐ (+${f(gain * 10)}% income)`, progress: 1, tab: 'stations', ready: true };
+    }
     return cands[0] || null;
   };
 
@@ -497,8 +502,8 @@
     if (nu) {
       $('nextCard').style.display = '';
       setText('nextIcon', nu.icon);
-      setText('nextText', nu.building ? nu.text : `${nu.text} · ${fm(nu.cost)}`);
-      $('nextBar').style.width = Math.min(100, (nu.building ? nu.progress : s.money / nu.cost) * 100) + '%';
+      setText('nextText', nu.building || nu.ready ? nu.text : `${nu.text} · ${fm(nu.cost)}`);
+      $('nextBar').style.width = Math.min(100, (nu.building || nu.ready ? nu.progress : s.money / nu.cost) * 100) + '%';
       U.nextTab = nu.tab;
     } else $('nextCard').style.display = 'none';
 
