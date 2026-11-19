@@ -1,0 +1,75 @@
+# Game Improvement Log — Car Factory Tycoon
+
+Autonome verbeterloop (analyse → plan → implementatie → test → evaluatie).
+
+## Testopzet
+
+- `tools/playtest.js` — Playwright-playtest (Chromium, headless, software-rendering) op desktop 1366×768, iPhone 13 staand (390×664) en iPhone 13 liggend (750×342). Test opstart, tutorial, eerste 30 s (produceren → showroom → verkopen → upgraden), alle tabs, bouwen, automatisering, Turbo via test-advertentie, tweede lijn, opslaan/herladen, 3 min versnelde sessie, JS-fouten, en migratie van een oude save + offline-inkomsten.
+- `tools/simulate.js` — headless balanssimulatie (bot).
+- Starten: `python3 -m http.server 8123` en dan `node tools/playtest.js`.
+
+**Wat niet echt getest kan worden:** echte FPS op telefoons (de testbrowser rendert in software, dus frametijden zijn niet representatief), echte CrazyGames-advertenties en de SDK-omgeving (alleen de lokale testmodus), audio-weergave, echte touch-gebaren als knijpen/draaien.
+
+## Fase 1 — Analyse (startsituatie)
+
+Technologie: vanilla JS + three.js r160 (lokaal), geen build-stap, LocalStorage-saves (`cft_save_v1`), CrazyGames SDK v3-wrapper met lokale testmodus, 2D-fallback.
+
+Sterk: complete idle-loop (7 stations, 7 modellen, 4 lijnen, 7 upgrades, 9 technologieën), doorlopende missies, dagelijkse uitdagingen, 20 prestaties, offline inkomsten, save-codes, auto-kwaliteit, nette scheiding logica/weergave.
+
+Top 10 verbeterpunten (geprioriteerd op impact × risico × tijd):
+
+| # | Probleem | Impact | Risico |
+|---|---|---|---|
+| 1 | Eerste auto pas na ~15–20 s in de showroom: eerste verkoop te laat | hoog (eerste indruk) | laag |
+| 2 | Mobiel liggend: camerabalk overlapt missiekaart, fabriek ~100 px hoog, hint valt over HUD, verkopen door tikken faalt | hoog (mobiel) | laag |
+| 3 | Mobiel staand: fabriek gebruikt ~⅓ van het scherm | middel-hoog | laag |
+| 4 | Geen prestige / langetermijnlus; na ±30 min alleen nog grotere getallen | hoog (retentie) | middel |
+| 5 | Alle bedrijfsupgrades zijn na 6–15 min gemaxt → weinig keuzes in de middenfase | middel | middel |
+| 6 | Geen CrazyGames Data-module (saves alleen lokaal) | middel | middel |
+| 7 | Onduidelijk welke aankoop het meest oplevert | middel | laag |
+| 8 | Visuele feedback bij mijlpalen/aankopen kan sterker | middel | laag |
+| 9 | Performance alleen in software-rendering gemeten | middel | laag |
+| 10 | Geen geautomatiseerde regressietests | middel | laag |
+
+---
+
+## Iteratie 1 — Snellere eerste beloning
+
+- **Probleem:** met alleen het chassisstation rijdt de eerste auto ~23 m aan 2 m/s over een lege band; eerste verkoop pas na ~16 s (sim) en op mobiel ~15 s.
+- **Verbetering:** na het laatst gebouwde station rijden auto's met ×3,2 snelheid ("sneltransport") langs nog niet gebouwde stations naar de showroom. Heeft alleen invloed op doorlooptijd, niet op productiesnelheid (`lineRate`) of balans.
+- **Bestanden:** `js/game.js`
+- **Tests:** balanssim, volledige playtest.
+- **Resultaat:** eerste verkoop sim 0:16 → 0:08; mobiel eerste auto in showroom 14,7 s → 6,7 s; eerste beloningslus (produceren → verkopen → upgrade) 16,4 s → 8,7 s. Geen regressies.
+
+## Iteratie 2 — Mobiel liggend + tik-bug
+
+- **Probleem:** (a) op kleine schermen ligt de grote hitbox van het "Line 2"/bouwplaats-label over de kleine showroom-auto, waardoor tikken-om-te-verkopen faalde (playtest ✗); (b) camerabalk over de missiekaart; (c) fabriek ~100 px hoog; (d) paneel als onderblad liet de fabriek onzichtbaar; (e) hint over de HUD.
+- **Verbetering:** showroom-auto's krijgen voorrang in `hitTest`; liggend: horizontale camerabalk linksonder zonder zoomknoppen, produceerknop rechtsonder, paneel als zijpaneel, missiekaart verborgen zolang een paneel open is, eigen camera-marges; hint wordt onder de HUD geklemd.
+- **Bestanden:** `js/render3d.js`, `js/ui.js`, `css/style.css`
+- **Tests:** playtest (alle 3 formaten), screenshots open/dicht paneel.
+- **Resultaat:** tikken-om-te-verkopen werkt liggend; fabriek ~2× groter in beeld; geen overlap meer.
+
+## Iteratie 3 — Mobiel staand: camera kiest de beste hoek
+
+- **Probleem:** portretcamera werd op een 390×664-scherm nooit geactiveerd; fabriek was een smal strookje in het midden.
+- **Verbetering:** `R.fit` berekent nu zowel de brede als de staande camerahoek en kiest de beste (op staande schermen met voorkeur voor staand). Bovenmarge volgt de werkelijke hoogte van de missiekaart (ResizeObserver). Zoomknoppen verborgen op kleine touchschermen (knijpen werkt).
+- **Bestanden:** `js/render3d.js`, `js/ui.js`, `css/style.css`
+- **Tests:** screenshots telefoon/tablet/desktop, volledige playtest 63/63.
+- **Resultaat:** fabriek vult de verticale ruimte op telefoon en tablet; desktop ongewijzigd.
+
+### Scores na iteratie 3
+
+| Onderdeel | Score | Basis |
+|---|---|---|
+| Eerste indruk | 7/10 | test + inschatting |
+| Gameplay | 7/10 | inschatting |
+| Visuele kwaliteit | 7/10 | screenshots |
+| Gebruiksvriendelijkheid | 7/10 | test |
+| Progressie | 7/10 | sim |
+| Retentiepotentieel | 5/10 | inschatting (geen prestige) |
+| Performance | 7/10 | gemeten draw calls (45–47), FPS niet representatief |
+| Stabiliteit | 9/10 | test (63/63, geen JS-fouten) |
+| Mobiele ervaring | 7/10 | test + screenshots |
+| CrazyGames-geschiktheid | 7/10 | inschatting |
+
+Volgende focus: retentie (prestige-systeem).

@@ -9,6 +9,7 @@
   G.ST_X = [3, 6.3, 9.6, 12.9, 16.2, 19.5, 22.8];
   G.BELT_END = 25.8;
   G.GAP = 1.9;            // minimale afstand tussen auto's op de band
+  G.EXPRESS = 3.2;        // snelheidsfactor langs nog niet gebouwde stations
   G.START_MONEY = 25;
   G.SAVE_KEY = 'cft_save_v1';
 
@@ -462,7 +463,10 @@
         for (let i = car.stage + 1; i <= lastIdx; i++) { if (s.stations[i] > 0) { next = i; break; } }
         let stopX = next >= 0 ? G.ST_X[next] : G.BELT_END;
         if (ci > 0) stopX = Math.min(stopX, cars[ci - 1].x - G.GAP);
-        car.x = Math.min(car.x + belt * dt, Math.max(car.x, stopX));
+        // na het laatst gebouwde station: sneltransport langs de lege bouwplaatsen naar de showroom
+        // (beïnvloedt alleen de doorlooptijd, niet de productiesnelheid)
+        const sp = next < 0 && lastIdx < ST.length - 1 ? belt * G.EXPRESS : belt;
+        car.x = Math.min(car.x + sp * dt, Math.max(car.x, stopX));
         if (next >= 0 && car.x >= G.ST_X[next] - 1e-6) {
           car.x = G.ST_X[next];
           car.proc = next;

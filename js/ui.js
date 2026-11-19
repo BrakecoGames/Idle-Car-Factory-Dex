@@ -102,6 +102,8 @@
     $('vipBtn').addEventListener('click', () => { A.click(); U.vipDialog(); });
 
     U.bindCanvas($('game'));
+    // missiekaart verandert van hoogte (claim-knop): camera-marges bijwerken
+    if (window.ResizeObserver) { let lastH = 0; new ResizeObserver(() => { const h = $('sideCards').offsetHeight; if (h !== lastH) { lastH = h; U.layoutPads(); } }).observe($('sideCards')); }
     // de app-container mag nooit verschuiven (bijv. door focus op een tekstveld)
     $('app').addEventListener('scroll', () => { $('app').scrollLeft = 0; $('app').scrollTop = 0; });
     U.updateSoundBtn();
@@ -226,10 +228,21 @@
     document.querySelectorAll('#tabs button').forEach(b => b.classList.remove('on'));
     U.layoutPads();
   };
+  U.shortLand = () => window.innerHeight <= 520 && window.innerWidth > window.innerHeight && window.innerWidth >= 600;
   U.layoutPads = function () {
+    if (U.shortLand()) {
+      // telefoon liggend: fabriek tussen missiekaart (links) en produceerknop (rechts)
+      const panelW = Math.min(400, window.innerWidth * 0.52);
+      R.pad.t = 64; R.pad.b = 58;
+      R.pad.l = U.tab ? 10 : 200;
+      R.pad.r = U.tab ? panelW + 10 : 92;
+      if (!R.cam.user) R.fit();
+      return;
+    }
     const wide = window.innerWidth >= 900;
     const small = window.innerWidth < 641;
-    R.pad.t = small ? 130 : 70;
+    // kleine schermen: de missiekaart staat over de volle breedte, dus de fabriek begint eronder
+    R.pad.t = small ? Math.max(120, $('sideCards').getBoundingClientRect().bottom + 6) : 70;
     R.pad.l = !small && window.innerWidth >= 1100 ? 320 : 10;
     R.pad.r = wide && U.tab ? 410 : 10;
     R.pad.b = !wide && U.tab ? window.innerHeight * 0.58 + 64 : small ? 170 : 165;
@@ -554,7 +567,9 @@
       hint.hidden = false;
       hint.textContent = text;
       const x = Math.max(140, Math.min(app.width - 140, target[0]));
-      hint.style.left = x + 'px'; hint.style.top = target[1] + 'px';
+      // nooit over de bovenbalk heen
+      const minTop = $('hud').offsetHeight + hint.offsetHeight + 6;
+      hint.style.left = x + 'px'; hint.style.top = Math.max(minTop, target[1]) + 'px';
     } else hint.hidden = true;
   };
 

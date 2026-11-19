@@ -731,18 +731,10 @@
     camera.lookAt(_t.set(c.tx, 0.6, c.tz));
     camera.updateMatrixWorld();
   }
-  R.fit = function (instant) {
-    if (!camera) return;
-    const s = G.s, y1 = hallDepth(s.lines, s.lines < CFT.MAX_LINES);
-    const aw = Math.max(120, W - R.pad.l - R.pad.r), ah = Math.max(120, H - R.pad.t - R.pad.b);
-    R.portrait = ah > aw * 1.15;
-    goal.yaw = R.portrait ? Math.PI / 2 - 0.42 : 0.3;
-    goal.pitch = R.portrait ? 0.95 : 0.8;
-    goal.tx = (X0 + X1) / 2; goal.tz = (y1 - 2.2) / 2;
-    const ex = aw / W, ey = ah / H, corners = boundsCorners();
-    camera.clearViewOffset(); camera.aspect = W / H; camera.updateProjectionMatrix();
+  // zoek de kleinste afstand waarbij de hele hal in het vrije schermdeel past (binair zoeken)
+  function fitDist(view, corners, ex, ey) {
     let lo = 8, hi = 260, cxm = 0, cym = 0;
-    const test = Object.assign({}, goal);
+    const test = Object.assign({}, goal, view);
     for (let it = 0; it < 22; it++) {
       test.dist = (lo + hi) / 2; applyCam(test);
       let a = 1e9, b2 = -1e9, c2 = 1e9, d2 = -1e9;
@@ -750,10 +742,29 @@
       cxm = (a + b2) / 2; cym = (c2 + d2) / 2;
       if ((b2 - a) / 2 <= ex && (d2 - c2) / 2 <= ey) hi = test.dist; else lo = test.dist;
     }
-    goal.dist = hi * 1.02;
+    applyCam(test);
+    return { dist: hi, cxm, cym };
+  }
+  R.fit = function (instant) {
+    if (!camera) return;
+    const s = G.s, y1 = hallDepth(s.lines, s.lines < CFT.MAX_LINES);
+    const aw = Math.max(120, W - R.pad.l - R.pad.r), ah = Math.max(120, H - R.pad.t - R.pad.b);
+    goal.tx = (X0 + X1) / 2; goal.tz = (y1 - 2.2) / 2;
+    const ex = aw / W, ey = ah / H, corners = boundsCorners();
+    camera.clearViewOffset(); camera.aspect = W / H; camera.updateProjectionMatrix();
+    // twee standpunten: breed (lijn horizontaal) en staand (lijn van boven naar beneden); kies het dichtstbijzijnde
+    const wideV = { yaw: 0.3, pitch: 0.8 };
+    const tallV = { yaw: R._py != null ? R._py : 1.3, pitch: R._pp != null ? R._pp : 0.98 };
+    const fw = fitDist(wideV, corners, ex, ey);
+    const ft = ah > aw * 0.55 ? fitDist(tallV, corners, ex, ey) : null;
+    // op een staand scherm heeft de staande hoek de voorkeur (vult het scherm, past bij duimbediening)
+    R.portrait = !!ft && ft.dist < fw.dist * (H > W ? 1.15 : 0.92);
+    const best = R.portrait ? ft : fw;
+    Object.assign(goal, R.portrait ? tallV : wideV);
+    goal.dist = best.dist * 1.02;
     // lensverschuiving: beeld centreren in het vrije deel van het scherm
-    lens.gx = -(R.pad.l - R.pad.r) / 2 + cxm * W / 2;
-    lens.gy = -(R.pad.t - R.pad.b) / 2 - cym * H / 2;
+    lens.gx = -(R.pad.l - R.pad.r) / 2 + best.cxm * W / 2;
+    lens.gy = -(R.pad.t - R.pad.b) / 2 - best.cym * H / 2;
     R._fitDist = goal.dist;
     if (instant) { Object.assign(cam, goal); lens.x = lens.gx; lens.y = lens.gy; }
   };
@@ -913,8 +924,11 @@
     octx.globalAlpha = 1;
     if (G.boosted()) { octx.strokeStyle = `rgba(250,204,21,${0.35 + Math.sin(time * 4) * 0.15})`; octx.lineWidth = 6; octx.strokeRect(3, 3, W - 6, H - 6); }
   }
+  // auto's in de showroom gaan voor: op kleine schermen kunnen grote labels (bouwplaats, nieuwe lijn) eroverheen liggen
   R.hitTest = function (x, y) {
-    for (let k = R.hits.length - 1; k >= 0; k--) { const h = R.hits[k]; if (x >= h.x && x <= h.x + h.w && y >= h.y && y <= h.y + h.h) return h; }
+    const inside = h => x >= h.x && x <= h.x + h.w && y >= h.y && y <= h.y + h.h;
+    for (let k = R.hits.length - 1; k >= 0; k--) { const h = R.hits[k]; if (h.kind === 'lot' && inside(h)) return h; }
+    for (let k = R.hits.length - 1; k >= 0; k--) { const h = R.hits[k]; if (inside(h)) return h; }
     return null;
   };
 

@@ -240,11 +240,35 @@ button { font: inherit; color: inherit; border: 0; cursor: pointer; background: 
   .cam-pad button { width: 38px; height: 38px; font-size: 18px; }
   #app.panel-open .cam-pad { display: none; }
 }
+@media (max-width: 640px) and (pointer: coarse) {
+  .cam-pad #zoomIn, .cam-pad #zoomOut { display: none; }
+}
 @media (max-height: 520px) and (orientation: landscape) {
-  #sideCards { width: 250px; }
+  #sideCards { width: 230px; top: 64px; }
+  .mission-text { font-size: 13px; margin: 2px 0 6px; }
+  .claim-btn { padding: 6px; margin-top: 6px; font-size: 14px; }
+  /* camerabalk: horizontaal linksonder, zonder zoomknoppen (knijpen werkt) */
+  .cam-pad { flex-direction: row; bottom: calc(var(--tabs-h) + var(--safe-b) + 8px); gap: 5px; }
+  .cam-pad button { width: 38px; height: 38px; font-size: 18px; }
+  .cam-pad #zoomIn, .cam-pad #zoomOut { display: none; }
+  /* produceerknop rechtsonder zodat de fabriek het midden houdt */
+  #actionRow { position: absolute; right: calc(12px + env(safe-area-inset-right, 0px)); bottom: calc(var(--tabs-h) + var(--safe-b) + 8px); margin: 0; flex-direction: row-reverse; }
+  #bottom { align-items: stretch; }
+  #tabs { align-self: center; }
+  .vip-btn { top: 64px; }
+  #toasts { top: 66px; }
   #nextCard { display: none; }
   .produce-btn { width: 74px; height: 74px; }
   #tabs { height: 52px; }
   :root { --tabs-h: 52px; }
   .tl { display: none; }
+}
+/* telefoon liggend: paneel aan de zijkant (staat bewust onderaan zodat het de regels hierboven overschrijft) */
+@media (max-height: 520px) and (orientation: landscape) and (min-width: 600px) {
+  #panel { top: 58px; right: 0; bottom: 0; left: auto; height: auto; width: min(var(--panel-w), 52vw); border-radius: 18px 0 0 0; }
+  #panel.closed { transform: translateX(105%); opacity: 1; pointer-events: none; }
+  #app.panel-open #bottom { right: min(var(--panel-w), 52vw); }
+  #app.panel-open #actionRow { display: flex; }
+  #app.panel-open .cam-pad { display: flex; }
+  #app.panel-open #sideCards { display: none; }
 }
