@@ -106,3 +106,11 @@ Volgende focus: retentie (prestige-systeem).
 | Stabiliteit | 9/10 | test 69/69 |
 | Mobiele ervaring | 7.5/10 | test + screenshots |
 | CrazyGames-geschiktheid | 7.5/10 | inschatting |
+
+## Iteratie 6 — Cloudopslag via CrazyGames Data-module
+
+- **Probleem:** saves alleen in LocalStorage; spelers die op CrazyGames inloggen verliezen voortgang op een ander apparaat of na het wissen van browserdata.
+- **Verbetering:** als de echte SDK een `data`-module heeft, wordt elke save óók daarheen geschreven. Bij laden wordt de nieuwste geldige save (op `savedAt`) uit LocalStorage en cloud gekozen; corrupte of falende cloud-opslag valt terug op lokaal. LocalStorage blijft altijd beschreven. Instellingen tonen waar opgeslagen wordt.
+- **Bestanden:** `js/game.js`, `js/sdk.js`, `js/main.js`, `js/ui.js`
+- **Tests:** Node-unit-test met nep-opslag (alleen lokaal, beide, nieuwere cloud-save, corrupte cloud, gooiende cloud), `?cg=1`-opstart (SDK-host onbereikbaar → nette fallback, geen fouten), playtest 69/69.
+- **Niet getest:** de echte CrazyGames Data-module (SDK-host is vanuit deze testomgeving niet bereikbaar). Controleer dit in de CrazyGames-QA-tool vóór publicatie.

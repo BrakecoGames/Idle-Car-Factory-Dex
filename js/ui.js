@@ -807,7 +807,7 @@
         <div class="setting"><span>Sound ${st.muted ? 'off' : 'on'}</span><button class="buy blue" data-mact="mute">${st.muted ? 'Turn on' : 'Mute'}</button></div>
         <div class="setting"><span>Fullscreen</span><button class="buy blue" data-mact="fs">${fs ? 'Exit' : 'On'}</button></div>
         <div class="setting"><span>💾 Save & save codes</span><button class="buy blue" data-mact="save">Open</button></div>
-        <p style="font-size:12px;color:#64748b;margin-top:12px">Progress is saved automatically in your browser.<br>${P.real ? 'CrazyGames mode' : 'Local test mode'} · v1.0</p>
+        <p style="font-size:12px;color:#64748b;margin-top:12px">Progress is saved automatically ${G.cloud ? 'to your CrazyGames account and this browser' : 'in your browser'}.<br>${P.real ? 'CrazyGames mode' : 'Local test mode'} · v1.0</p>
         <p class="copyright">© 2026 Brakeco Games</p>
         <button class="danger" data-mact="reset">Reset progress</button>`,
       buttons: [{ label: 'Close', cls: 'blue' }],

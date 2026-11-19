@@ -670,8 +670,15 @@
     G.s.savedAt = G.now();
     return JSON.stringify(G.s);
   };
+  // extra opslag (bijv. CrazyGames Data-module, gesynchroniseerd met het account); LocalStorage blijft altijd de basis
+  G.cloud = null;
   G.save = function (storage) {
-    try { (storage || globalThis.localStorage).setItem(G.SAVE_KEY, G.serialize()); G.lastSaved = G.now(); G.emit('saved'); return true; } catch (e) { return false; }
+    const json = G.serialize();
+    let ok = false;
+    try { (storage || globalThis.localStorage).setItem(G.SAVE_KEY, json); ok = true; } catch (e) {}
+    if (!storage && G.cloud) { try { G.cloud.setItem(G.SAVE_KEY, json); ok = true; } catch (e) {} }
+    if (ok) { G.lastSaved = G.now(); G.emit('saved'); }
+    return ok;
   };
   // Zet ruwe save-data om naar een geldige spelstatus (ook voor oudere of geïmporteerde saves)
   G.applyData = function (data) {
@@ -694,11 +701,14 @@
     if (!isFinite(G.s.money)) G.s.money = 0;
     return true;
   };
+  const readSave = st => { try { const raw = st && st.getItem(G.SAVE_KEY); const d = raw ? JSON.parse(raw) : null; return d && typeof d === 'object' ? d : null; } catch (e) { return null; } };
+  // laadt de meest recente geldige save uit LocalStorage en (indien aanwezig) de cloud-opslag
   G.load = function (storage) {
-    let raw = null;
-    try { raw = (storage || globalThis.localStorage).getItem(G.SAVE_KEY); } catch (e) {}
-    if (!raw) return false;
-    try { return G.applyData(JSON.parse(raw)); } catch (e) { return false; }
+    const cands = [readSave(storage || globalThis.localStorage)];
+    if (!storage && G.cloud) cands.push(readSave(G.cloud));
+    const valid = cands.filter(Boolean).sort((a, b) => (+b.savedAt || 0) - (+a.savedAt || 0));
+    for (const d of valid) if (G.applyData(d)) return true;
+    return false;
   };
   G.lastSaved = 0;
   // Save-code: tekst die je kunt bewaren en op een ander apparaat of in een andere versie weer inladen

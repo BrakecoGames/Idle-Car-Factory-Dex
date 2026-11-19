@@ -115,6 +115,7 @@
     P.loadingStart();
     await P.init();
     setLoad(40, 'Calibrating machines…');
+    if (P.cloudStorage) G.cloud = P.cloudStorage;
     const loaded = G.load();
     if (!loaded) G.reset();
     Object.assign(A.settings, G.s.settings);

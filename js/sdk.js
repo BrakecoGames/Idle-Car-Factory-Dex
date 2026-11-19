@@ -36,6 +36,8 @@
         await sdk().init();
         P.real = true;
         P.env = sdk().environment || 'crazygames';
+        // Data-module: saves synchroniseren met het CrazyGames-account (LocalStorage blijft de reserve)
+        try { if (sdk().data && typeof sdk().data.getItem === 'function') P.cloudStorage = sdk().data; } catch (e) {}
         // CrazyGames-instelling 'geluid uit' respecteren
         try {
           const apply = () => { const m = sdk().game.settings && sdk().game.settings.muteAudio; if (m != null) CFT.Audio.platformMute = m, CFT.Audio.apply(); };
