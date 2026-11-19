@@ -41,6 +41,8 @@
       tut: 0,
       // prestige ("nieuw merk"): sterren = permanente inkomstenbonus; runEarned = verdiend sinds laatste herstart
       prestige: { stars: 0, count: 0, runEarned: 0, best: 0 },
+      // dagelijkse login-reeks: last = dag van laatste bezoek, n = reekslengte, claimed = bonus van vandaag opgehaald
+      streak: { last: null, n: 0, claimed: true },
     };
   };
 
@@ -630,9 +632,31 @@
   };
 
   // ================= Dagelijkse uitdagingen =================
-  G.today = function () {
+  G.today = function (offsetDays) {
     const d = new Date();
+    if (offsetDays) d.setDate(d.getDate() + offsetDays);
     return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
+  };
+  // ---- Dagelijkse login-bonus (reeks van max. 7 dagen; een dag overslaan zet de reeks terug op 1) ----
+  G.STREAK_MAX = 7;
+  G.checkStreak = function () {
+    const st = G.s.streak, today = G.today();
+    if (st.last === today) return false;
+    st.n = st.last === G.today(-1) ? Math.min(G.STREAK_MAX, st.n + 1) || 1 : 1;
+    st.last = today; st.claimed = false;
+    return true;
+  };
+  G.streakReward = () => Math.max(150 * G.s.streak.n, G.ips() * 60 * G.s.streak.n);
+  G.streakTurbo = () => 60 * Math.min(5, G.s.streak.n); // seconden
+  G.claimStreak = function (mult) {
+    const st = G.s.streak;
+    if (st.claimed) return 0;
+    st.claimed = true;
+    const r = G.streakReward() * (mult || 1);
+    G.earn(r);
+    G.activateBoost(G.streakTurbo());
+    G.emit('streakClaim', r);
+    return r;
   };
   G.ensureDaily = function () {
     const day = G.today();
@@ -694,6 +718,7 @@
     G.s.building = Object.assign({ st: null, line: null }, data.building || {});
     // migratie: saves van vóór het prestige-systeem tellen alles wat ooit verdiend is mee voor de eerste herstart
     G.s.prestige = Object.assign(G.newState().prestige, data.prestige || { runEarned: +data.totalEarned || 0 });
+    G.s.streak = Object.assign(G.newState().streak, data.streak || {});
     if (!Array.isArray(G.s.models)) G.s.models = G.newState().models;
     while (G.s.models.length < MODELS.length) G.s.models.push(false);
     G.s.models[0] = true;
@@ -756,7 +781,7 @@
     if (!G.canPrestige()) return 0;
     const old = G.s, gain = G.prestigeGain(), fresh = G.newState();
     // blijft: prestaties, statistieken, levenslange totalen, instellingen, dagelijkse uitdagingen, lopende Turbo
-    for (const k of ['totalEarned', 'produced', 'sold', 'golden', 'ach', 'stats', 'settings', 'daily', 'boostUntil', 'tut']) fresh[k] = old[k];
+    for (const k of ['totalEarned', 'produced', 'sold', 'golden', 'ach', 'stats', 'settings', 'daily', 'boostUntil', 'tut', 'streak']) fresh[k] = old[k];
     fresh.prestige = { stars: old.prestige.stars + gain, count: old.prestige.count + 1, runEarned: 0, best: Math.max(old.prestige.best, gain) };
     G.s = fresh;
     // reputatie: automatische productie en verkoop vanaf het begin, meer startgeld
@@ -772,6 +797,7 @@
 
   G.reset = function () {
     G.s = G.newState();
+    G.s.streak.last = G.today(); // eerste dag: geen bonusvenster bovenop de introductie
     G.resetRuntime();
     G.ensureDaily();
   };

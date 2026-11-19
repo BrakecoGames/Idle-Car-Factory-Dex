@@ -701,6 +701,31 @@
     });
   };
 
+  U.streakDialog = function () {
+    const st = G.s.streak;
+    if (st.claimed) return;
+    let days = '<div class="streak-row">';
+    for (let d = 1; d <= G.STREAK_MAX; d++) days += `<div class="sd ${d < st.n ? 'past' : d === st.n ? 'now' : ''}"><small>Day</small>${d}</div>`;
+    days += '</div>';
+    const r = G.streakReward(), turbo = G.streakTurbo() / 60;
+    U.showModal({
+      icon: '🎁', title: st.n > 1 ? `Day ${st.n} streak!` : 'Daily bonus',
+      html: days + `<div class="big-money">${fm(r)}</div><p>+ <b>${turbo} min Turbo</b>. Come back tomorrow for a bigger bonus${st.n >= G.STREAK_MAX ? ' (max streak reached!)' : ''}.</p>`,
+      buttons: [
+        // keepOpen + zelf sluiten: anders zou de sluit-terugval hieronder eerst 1× uitbetalen
+        { label: '📺 Claim 2×: ' + fm(r * 2), cls: 'gold', keepOpen: true, fn: async () => { U._onClose = null; U.closeModal(); const ok = await P.rewarded(); U.streakClaim(ok ? 2 : 1); } },
+        { label: 'Claim', keepOpen: true, fn: () => { U._onClose = null; U.closeModal(); U.streakClaim(1); } },
+      ],
+    });
+    // sluiten met Escape: bonus niet kwijtraken
+    U._onClose = () => { if (!G.s.streak.claimed) U.streakClaim(1); };
+  };
+  U.streakClaim = function (mult) {
+    U._onClose = null;
+    const amt = G.claimStreak(mult);
+    if (amt) { A.coin(true); U.bumpMoney(); U.toast(`🎁 Daily bonus: +${fm(amt)} and Turbo!`, 'gold'); }
+  };
+
   U.offlineDialog = function (off) {
     U.showModal({
       icon: '🌙', title: 'Welcome back!',

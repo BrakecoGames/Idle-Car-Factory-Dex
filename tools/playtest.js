@@ -156,6 +156,17 @@ async function migrationTest(browser) {
   check('[migrate] legacy save loads with progress intact', s.st === '30,20,12,5,0,0,0' && s.prod === 500 && s.mission === 12 && s.money >= 12345, JSON.stringify(s));
   check('[migrate] offline earnings dialog after 1h', s.modal);
   await shot(page, 'offline');
+  // offline-venster ophalen → daarna verschijnt de dagbonus (oude save heeft nog geen reeks)
+  await page.locator('[data-mact="b1"]').click({ force: true });
+  await sleep(700);
+  const streakShown = await page.evaluate(() => !document.getElementById('modal').hidden && /Daily bonus|streak/.test(document.getElementById('modalBox').textContent));
+  check('[migrate] daily bonus follows offline dialog', streakShown);
+  await shot(page, 'streak');
+  const m0 = await page.evaluate(() => CFT.Game.s.money);
+  await page.locator('[data-mact="b0"]').click({ force: true });
+  await sleep(3200);
+  const sr = await page.evaluate(() => ({ claimed: CFT.Game.s.streak.claimed, n: CFT.Game.s.streak.n, boosted: CFT.Game.boosted(), money: CFT.Game.s.money }));
+  check('[migrate] daily bonus 2× via ad', sr.claimed && sr.n === 1 && sr.boosted && sr.money > m0 + 290, JSON.stringify(sr));
   check('[migrate] no JS errors', page._errors.length === 0, page._errors.slice(0, 5).join(' | '));
   await ctx.close();
 }

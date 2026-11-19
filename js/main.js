@@ -149,8 +149,14 @@
       setTimeout(() => $('loading').remove(), 600);
       P.loadingStop();
       P.gameplayStart();
-      if (loaded) catchUpOffline(true);
-      else U.toast('👋 Welcome, boss! Build the biggest car factory in the world.', 'good');
+      if (loaded) {
+        catchUpOffline(true);
+        if (G.checkStreak()) {
+          // na het offline-venster tonen (modalen niet stapelen)
+          if (!$('modal').hidden) { const prev = U._onClose; U._onClose = () => { prev && prev(); setTimeout(U.streakDialog, 350); }; }
+          else U.streakDialog();
+        }
+      } else U.toast('👋 Welcome, boss! Build the biggest car factory in the world.', 'good');
     }, 250);
     last = performance.now();
     requestAnimationFrame(frame);

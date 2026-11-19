@@ -135,3 +135,27 @@ Volgende focus: retentie (prestige-systeem).
 - **Verbetering:** `tools/perftest.js` meet JS-tijd per frame in een volle fabriek (4 lijnen, 72 auto's) en controleert op lekken over 20 000 frames met modelwissels; `CFT.Render.stats()` toont nu ook geometrieën, texturen, scène-objecten en auto-meshes.
 - **Resultaat (gemeten):** logica 0,02 ms, rendering (CPU-kant) ~2,0–2,5 ms, UI 0,13 ms per frame; 146–150 draw calls, ~105K driehoeken; heap 16–21 MB. Lekcontrole: objecten (155), texturen (9) en auto-meshes stabiel; geometrieën groeien alleen tot de begrensde cache van automodellen (≤ 7×8×2). **Geen optimalisatie nodig** — ruim binnen 16,7 ms. GPU-tijd en echte FPS zijn in de software-renderer niet meetbaar; test op een echte telefoon.
 - **Bestanden:** `tools/perftest.js`, `js/render3d.js` (alleen `stats()`)
+
+## Iteratie 10 — Dagelijkse login-bonus met reeks
+
+- **Probleem:** weinig directe reden om morgen terug te komen (alleen dagelijkse uitdagingen die je actief moet spelen).
+- **Verbetering:** bij de eerste opstart van een nieuwe dag een bonusvenster: dag 1–7 oplopend (geld = inkomsten × 60 s × dag, plus 1–5 min Turbo), optioneel 2× via rewarded ad. Een dag missen zet de reeks terug op dag 1 (geen andere straf). Nieuwe spelers krijgen het venster niet op hun eerste dag; het verschijnt pas ná het offline-venster (modalen worden niet gestapeld). Sluiten met Escape haalt de bonus alsnog op. De reeks blijft behouden bij een nieuw merk.
+- **Save-compatibiliteit:** nieuw veld `streak`, met standaardwaarde voor oude saves.
+- **Bug voorkomen tijdens ontwikkeling:** modal-knoppen sluiten de modal vóór hun actie, waardoor de "sluiten = ophalen"-terugval de 2×-optie zou opeten; knoppen sluiten nu zelf.
+- **Bestanden:** `js/game.js`, `js/ui.js`, `js/main.js`, `css/style.css`, `tools/playtest.js`
+- **Tests:** Node-unit-tests (nieuwe speler, reeks +1, dubbel ophalen, cap op 7, gemiste dag, oude save), playtest 71/71 incl. offline-venster → dagbonus → 2× via test-ad.
+
+### Scores na iteratie 10
+
+| Onderdeel | Score | Basis |
+|---|---|---|
+| Eerste indruk | 7.5/10 | test + inschatting |
+| Gameplay | 7.5/10 | inschatting |
+| Visuele kwaliteit | 7.5/10 | screenshots |
+| Gebruiksvriendelijkheid | 8/10 | test |
+| Progressie | 8/10 | sim |
+| Retentiepotentieel | 8/10 | inschatting (prestige + dagbonus) |
+| Performance | 7.5/10 | gemeten JS-tijd; GPU niet meetbaar |
+| Stabiliteit | 9/10 | test 71/71 |
+| Mobiele ervaring | 7.5/10 | test + screenshots |
+| CrazyGames-geschiktheid | 8/10 | inschatting |

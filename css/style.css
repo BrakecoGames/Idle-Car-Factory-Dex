@@ -43,6 +43,11 @@ button { font: inherit; color: inherit; border: 0; cursor: pointer; background: 
 .save-info { font-size: 13px; color: var(--muted); margin: 0 0 10px; }
 .save-err { color: #fca5a5; font-size: 13px; min-height: 18px; margin: 6px 0 0; }
 .chip-btn:hover { background: rgba(71,85,105,0.9); }
+.streak-row { display: flex; gap: 4px; justify-content: center; margin: 4px 0 10px; }
+.streak-row .sd { width: 38px; padding: 5px 0; border-radius: 9px; background: rgba(51,65,85,0.7); border: 1px solid var(--line); font-weight: 900; font-size: 15px; line-height: 1.05; color: var(--muted); }
+.streak-row .sd small { display: block; font-size: 9px; font-weight: 700; }
+.streak-row .sd.past { background: rgba(22,163,74,0.35); color: #bbf7d0; border-color: rgba(34,197,94,0.5); }
+.streak-row .sd.now { background: linear-gradient(180deg, #fde047, #f59e0b); color: #1c1917; border-color: #fde047; transform: scale(1.1); }
 .star-chip { color: #fde68a; border-color: rgba(251,191,36,0.45); background: rgba(120,53,15,0.55); }
 .item.prestige { border-color: rgba(251,191,36,0.55); background: linear-gradient(135deg, rgba(120,53,15,0.55), rgba(30,41,59,0.9)); }
 .stars { color: var(--gold); letter-spacing: -1px; font-size: 12px; }
