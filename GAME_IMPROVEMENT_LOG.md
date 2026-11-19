@@ -180,3 +180,10 @@ Volgende focus: retentie (prestige-systeem).
 - **Verbetering:** vierde tutorialstap na de eerste upgrade wijst naar een werkende machine ("Tap a working machine to help it go faster!") tot de speler 3× getikt heeft of automatische productie koopt (overgeslagen voor terugkerende merken). Hints klappen om naar *onder* het doel (pijl omhoog) als er erboven geen ruimte is door HUD of missiekaart.
 - **Bestanden:** `js/ui.js`, `css/style.css`
 - **Tests:** browser-scenario (hint verschijnt, geplaatst onder de machine, tikken telt), playtest 71/71.
+
+## Iteratie 14 — Merk-mijlpalen + modals op kleine schermen
+
+- **Probleem:** sterren gaven alleen een percentage; weinig concrete langetermijndoelen tussen herstarts. Daarnaast vielen de knoppen van lange dialogen op kleine telefoons buiten beeld (alleen bereikbaar door te scrollen).
+- **Verbetering:** vaste merk-mijlpalen die elke nieuwe start versnellen: 5 ⭐ motor + carrosserie gebouwd, 25 ⭐ 5 stations, 100 ⭐ Robot Arms 2.0 + Night Shift behouden, 400 ⭐ Cruiser + Trailblazer ontwikkeld, 1500 ⭐ tweede productielijn. Getoond in de prestige-kaart (volgende perk) en de dialoog (behaald + eerstvolgende twee). Modal-knoppen blijven onderin plakken; compactere modals bij schermhoogte < 700 px.
+- **Bestanden:** `js/data.js`, `js/game.js`, `js/ui.js`, `css/style.css`
+- **Tests:** Node-check (31 ⭐ → 5 stations; 2031 ⭐ → alle perks), sim met herstart, screenshot dialoog op iPhone 13 (knoppen zichtbaar), playtest 71/71.

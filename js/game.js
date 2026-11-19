@@ -776,6 +776,7 @@
   G.prestigeNext = () => Math.pow(G.prestigeGain() + 1, 2) * G.PRESTIGE_BASE;
   G.prestigeUnlocked = () => G.s.lines >= 2 || G.s.prestige.count > 0;
   G.canPrestige = () => G.prestigeUnlocked() && G.prestigeGain() >= 1;
+  G.nextPerk = (stars) => CFT.BRAND_PERKS.find(p => p.stars > (stars == null ? G.s.prestige.stars : stars)) || null;
   G.prestigeStartMoney = () => G.START_MONEY + 250 * G.s.prestige.count;
   G.doPrestige = function () {
     if (!G.canPrestige()) return 0;
@@ -784,8 +785,9 @@
     for (const k of ['totalEarned', 'produced', 'sold', 'golden', 'ach', 'stats', 'settings', 'daily', 'boostUntil', 'tut', 'streak']) fresh[k] = old[k];
     fresh.prestige = { stars: old.prestige.stars + gain, count: old.prestige.count + 1, runEarned: 0, best: Math.max(old.prestige.best, gain) };
     G.s = fresh;
-    // reputatie: automatische productie en verkoop vanaf het begin, meer startgeld
+    // reputatie: automatische productie en verkoop vanaf het begin, meer startgeld, plus merk-mijlpalen
     G.s.upg.autoProd = 1; G.s.upg.autoSell = 1;
+    for (const p of CFT.BRAND_PERKS) if (G.s.prestige.stars >= p.stars) p.apply(G.s);
     G.s.money = G.prestigeStartMoney();
     G.s.savedAt = G.now();
     G.resetRuntime();

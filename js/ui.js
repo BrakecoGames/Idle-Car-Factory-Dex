@@ -295,7 +295,7 @@
       const gain = G.prestigeGain(), pr = s.prestige;
       h += `<h3>New brand</h3>
       <div class="item prestige"><div class="ic">⭐</div><div><div class="nm">Start a new brand ${pr.stars ? `<span class="lv">⭐ ${pr.stars} · +${Math.round((G.prestigeMult() - 1) * 100)}% income</span>` : ''}</div>
-      <div class="ds">${gain >= 1 ? `Restart now for <b>+${gain} ⭐</b> (+${gain * 10}% income forever).` : `Earn <b>${fm(G.prestigeNext())}</b> this run for your first ⭐.`}<br>Next ⭐ at ${fm(G.prestigeNext())} earned (now ${fm(pr.runEarned)})</div></div>
+      <div class="ds">${gain >= 1 ? `Restart now for <b>+${gain} ⭐</b> (+${gain * 10}% income forever).` : `Earn <b>${fm(G.prestigeNext())}</b> this run for your first ⭐.`}<br>Next ⭐ at ${fm(G.prestigeNext())} earned (now ${fm(pr.runEarned)})${(() => { const np = G.nextPerk(); return np ? `<br>Next perk at ⭐ ${f(np.stars)}: ${esc(np.text)}` : ''; })()}</div></div>
       ${btn('prestige', gain >= 1 ? `+${gain} ⭐` : 'Locked', 'new brand', gain >= 1, 'gold')}</div>`;
     }
     h += `<h3>Production stations <span style="text-transform:none;color:#94a3b8;font-weight:600">(tap a station in the factory to lend a hand)</span></h3>`;
@@ -686,6 +686,16 @@
     return true;
   };
 
+  // merk-mijlpalen: behaald ✓, volgende gemarkeerd
+  function perksHtml(stars) {
+    let h = '<div class="perks">', upcoming = 0;
+    for (const p of CFT.BRAND_PERKS) {
+      const have = stars >= p.stars, next = !have && G.nextPerk(stars) === p;
+      if (!have && ++upcoming > 2) break; // alleen de eerstvolgende twee tonen
+      h += `<div class="perk ${have ? 'have' : next ? 'next' : ''}"><span>${p.icon}</span><span>${esc(p.text)}</span><b>${have ? '✓' : '⭐ ' + f(p.stars)}</b></div>`;
+    }
+    return h + '</div>';
+  }
   U.prestigeDialog = function () {
     const s = G.s, gain = G.prestigeGain(), pr = s.prestige;
     const info = `<div class="statlist" style="margin:8px 0 4px">
@@ -693,6 +703,7 @@
       <span>Stars after restart</span><b style="color:#fde047">⭐ ${f(pr.stars + gain)} (+${Math.round((pr.stars + gain) * 10)}%)</b>
       <span>Earned this run</span><b>${fm(pr.runEarned)}</b>
       <span>Next ⭐ at</span><b>${fm(G.prestigeNext())}</b></div>
+      ${perksHtml(pr.stars + gain)}
       <p style="font-size:13px;color:#94a3b8;margin:6px 0 0">You keep: stars, achievements, statistics and daily challenges. You start with <b>Auto Production</b>, a <b>Sales Team</b> and ${fm(G.START_MONEY + 250 * (pr.count + 1))}.<br>Resets: money, stations, upgrades, technology, models and production lines.</p>`;
     if (!G.canPrestige()) {
       U.showModal({ icon: '⭐', title: 'New brand', text: `Every <b>⭐ star</b> gives <b>+10% income forever</b>. ${G.prestigeUnlocked() ? `Earn ${fm(G.prestigeNext())} in this run to earn your first star.` : 'Unlocks with your second production line.'}`, html: G.prestigeUnlocked() ? info : '', buttons: [{ label: 'OK', cls: 'blue' }] });

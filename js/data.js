@@ -120,6 +120,15 @@
     { id: 'brand10', icon: '🌠', name: 'Household Name',    desc: 'Own 10 brand stars',             check: s => s.prestige && s.prestige.stars >= 10 },
   ];
 
+  // ---- Merk-mijlpalen: vaste voordelen bij elke nieuwe start, vanaf een aantal sterren ----
+  CFT.BRAND_PERKS = [
+    { stars: 5,    icon: '🔧', text: 'Start with Engine Assembly and Body Shop built', apply: s => { s.stations[1] = s.stations[1] || 1; s.stations[2] = s.stations[2] || 1; } },
+    { stars: 25,   icon: '🏭', text: 'Start with 5 stations built',                    apply: s => { for (let i = 0; i < 5; i++) s.stations[i] = s.stations[i] || 1; } },
+    { stars: 100,  icon: '🦾', text: 'Keep Robot Arms 2.0 and Night Shift',              apply: s => { s.tech.robots2 = true; s.tech.offline = true; } },
+    { stars: 400,  icon: '🚙', text: 'Start with the Cruiser and Trailblazer developed', apply: s => { s.models[1] = s.models[2] = true; s.model = 2; } },
+    { stars: 1500, icon: '🏗️', text: 'Start with a second production line',             apply: s => { s.lines = Math.max(2, s.lines); } },
+  ];
+
   // ---- Dagelijkse uitdagingen (sjablonen) ----
   CFT.DAILY_TEMPLATES = [
     { t: 'produce', label: n => `Produce ${n} cars`, scale: rate => Math.max(40, Math.round(rate * 480 / 10) * 10) },
