@@ -73,3 +73,36 @@ Top 10 verbeterpunten (geprioriteerd op impact × risico × tijd):
 | CrazyGames-geschiktheid | 7/10 | inschatting |
 
 Volgende focus: retentie (prestige-systeem).
+
+## Iteratie 4 — Prestige: "Start a new brand"
+
+- **Probleem:** geen langetermijnlus; na lijn 3–4 alleen nog wachten op steeds grotere getallen. README noemde prestige al als volgende stap.
+- **Verbetering:** nieuw merk starten (vanaf productielijn 2). Sterren = ⌊√(verdiend deze run / $1B)⌋, elke ster +10% inkomsten voor altijd. Behouden: sterren, prestaties, statistieken, levenslange totalen, dagelijkse uitdagingen, instellingen, lopende Turbo. Nieuw merk start met Auto Production + Sales Team (geen handmatige fase meer) en +$250 startgeld per herstart. UI: kaart "New brand" in het Fabriek-paneel met voortgang naar de volgende ster, ⭐-chip in de HUD, bevestigingsdialoog met wat blijft/wat reset, badge en eenmalige melding. Twee nieuwe prestaties (Fresh Start, Household Name).
+- **Save-compatibiliteit:** nieuw veld `prestige`; oude saves krijgen `runEarned = totalEarned` zodat bestaande spelers direct van hun voortgang profiteren. Opslagsleutel en formaat ongewijzigd.
+- **Bestanden:** `js/game.js`, `js/ui.js`, `js/data.js`, `index.html`, `css/style.css`, `tools/simulate.js` (`PRESTIGE_AT=<min>`), `tools/playtest.js`
+- **Tests:** unit-check in Node (winst, reset, migratie), sim met herstart op 12 min, playtest 69/69 (incl. prestige via UI op 3 formaten).
+- **Resultaat:** bot op 12 min → +14 ⭐ (+140%); tweede run bereikt lijn 2 ~25% sneller en lijn 3 op +9:17 i.p.v. 10:46. Duidelijk doel voor de 10–30-minutenfase en reden om opnieuw te spelen.
+- **Rest:** sterren hebben nog geen eigen uitgeefbare upgrades (mogelijke uitbreiding).
+
+## Iteratie 5 — Toast-opmaak
+
+- **Probleem:** meldingen met vetgedrukte woorden werden door `display:flex` in losse kolommen gezet (bijv. "Building **Engine Assembly** · ready in 4s"). Raakte tientallen meldingen.
+- **Verbetering:** inhoud in één `<span>` gewikkeld.
+- **Bestanden:** `js/ui.js`
+- **Tests:** screenshot van meerdere toasts, playtest.
+- **Resultaat:** meldingen lezen als normale zinnen.
+
+### Scores na iteratie 5
+
+| Onderdeel | Score | Basis |
+|---|---|---|
+| Eerste indruk | 7/10 | test + inschatting |
+| Gameplay | 7/10 | inschatting |
+| Visuele kwaliteit | 7.5/10 | screenshots |
+| Gebruiksvriendelijkheid | 7.5/10 | test |
+| Progressie | 8/10 | sim |
+| Retentiepotentieel | 7/10 | inschatting (prestige toegevoegd) |
+| Performance | 7/10 | draw calls gemeten; FPS niet representatief |
+| Stabiliteit | 9/10 | test 69/69 |
+| Mobiele ervaring | 7.5/10 | test + screenshots |
+| CrazyGames-geschiktheid | 7.5/10 | inschatting |

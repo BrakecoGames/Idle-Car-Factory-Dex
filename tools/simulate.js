@@ -73,7 +73,14 @@ function botStep() {
 const dt = 0.05;
 let spawnAcc = 0, botAcc = 0, nextReport = +process.argv[3] || 60;
 const reports = [];
+// optioneel: PRESTIGE_AT=<minuut> → bot start op dat moment een nieuw merk
+const PRESTIGE_AT = +process.env.PRESTIGE_AT || 0;
+let prestiged = false;
+G.save = () => true;
 while (G.rt.t < MIN * 60) {
+  if (PRESTIGE_AT && !prestiged && G.rt.t >= PRESTIGE_AT * 60 && G.canPrestige()) {
+    const t = G.rt.t, gain = G.doPrestige(); G.rt.t = t; prestiged = true; mark('PRESTIGE +' + gain + ' sterren');
+  }
   clock += dt * 1000;
   if (!G.s.upg.autoProd) { spawnAcc += dt; if (spawnAcc >= MANUAL_SPAWN) { spawnAcc = 0; G.manualProduce(); } }
   G.update(dt);

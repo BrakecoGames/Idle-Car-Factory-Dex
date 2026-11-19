@@ -116,6 +116,8 @@
     { id: 'taps',    icon: '👆', name: 'Hands-On Boss',     desc: 'Help a station 100 times', check: s => s.stats.taps >= 100 },
     { id: 'vip',     icon: '🤵', name: 'VIP Service',       desc: 'Serve 10 VIP buyers',          check: s => s.stats.vip >= 10 },
     { id: 'play30',  icon: '⏱️', name: 'Dedicated',         desc: 'Play for 30 minutes',            check: s => s.stats.play >= 1800 },
+    { id: 'brand1',  icon: '⭐', name: 'Fresh Start',       desc: 'Start a new brand',              check: s => s.prestige && s.prestige.count >= 1 },
+    { id: 'brand10', icon: '🌠', name: 'Household Name',    desc: 'Own 10 brand stars',             check: s => s.prestige && s.prestige.stars >= 10 },
   ];
 
   // ---- Dagelijkse uitdagingen (sjablonen) ----

@@ -119,6 +119,20 @@ async function firstSession(page, isMobile) {
   check(`[${page._label}] long session stable`, await st(page, () => isFinite(CFT.Game.s.money) && CFT.Game.s.produced > 0), 'sim 180s in ' + simMs + 'ms');
   check(`[${page._label}] render stats`, !!fpsInfo, JSON.stringify(fpsInfo));
   await shot(page, '07-after-long');
+
+  // prestige: nieuw merk starten via de UI
+  await st(page, () => { CFT.Game.s.prestige.runEarned = 5e9; CFT.UI.openTab('stations'); });
+  await sleep(300);
+  await shot(page, '08-prestige-card');
+  await tap('[data-act="prestige"]'); await sleep(250);
+  await shot(page, '09-prestige-dialog');
+  await page.locator('[data-mact="b0"]').click({ force: true });
+  await sleep(1200);
+  const pr = await st(page, () => ({ stars: CFT.Game.s.prestige.stars, lines: CFT.Game.s.lines, auto: CFT.Game.s.upg.autoProd, chip: !document.getElementById('starChip').hidden }));
+  check(`[${page._label}] prestige resets and grants stars`, pr.stars === 2 && pr.lines === 1 && pr.auto === 1 && pr.chip, JSON.stringify(pr));
+  await sleep(2500);
+  check(`[${page._label}] production runs after prestige`, await st(page, () => CFT.Game.s.produced > 0 && CFT.Game.rt.lines[0].cars.length + CFT.Game.rt.lines[0].lot.length > 0));
+  await shot(page, '10-after-prestige');
   check(`[${page._label}] no JS errors`, page._errors.length === 0, page._errors.slice(0, 5).join(' | '));
 }
 

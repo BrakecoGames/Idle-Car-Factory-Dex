@@ -84,6 +84,7 @@
       clearTimeout(U._savedT); U._savedT = setTimeout(() => { b.classList.remove('saved'); b.textContent = '💾'; }, 900);
     });
     $('modelChip').addEventListener('click', () => { A.click(); U.openTab('models'); });
+    $('starChip').addEventListener('click', () => { A.click(); U.prestigeDialog(); });
     $('fitBtn').addEventListener('click', () => { A.click(); R.cam.user = false; U.layoutPads(); R.fit(); });
     // cameraknoppen: ingedrukt houden draait/zoomt door
     const camHold = (id, fn) => {
@@ -289,6 +290,14 @@
       <div class="ds">${can ? `One more complete assembly line. <b>+${Math.round(100 / s.lines)}% production</b>.<br>⏱ Build time <b>${CFT.fmtTime(G.lineTime())}</b>` : esc(G.reqText(CFT.LINE_REQ[s.lines]))}</div></div>
       ${btn('line', fm(cost), 'build', can && s.money >= cost, 'gold')}</div>`;
     }
+    // nieuw merk (prestige)
+    if (G.prestigeUnlocked()) {
+      const gain = G.prestigeGain(), pr = s.prestige;
+      h += `<h3>New brand</h3>
+      <div class="item prestige"><div class="ic">⭐</div><div><div class="nm">Start a new brand ${pr.stars ? `<span class="lv">⭐ ${pr.stars} · +${Math.round((G.prestigeMult() - 1) * 100)}% income</span>` : ''}</div>
+      <div class="ds">${gain >= 1 ? `Restart now for <b>+${gain} ⭐</b> (+${gain * 10}% income forever).` : `Earn <b>${fm(G.prestigeNext())}</b> this run for your first ⭐.`}<br>Next ⭐ at ${fm(G.prestigeNext())} earned (now ${fm(pr.runEarned)})</div></div>
+      ${btn('prestige', gain >= 1 ? `+${gain} ⭐` : 'Locked', 'new brand', gain >= 1, 'gold')}</div>`;
+    }
     h += `<h3>Production stations <span style="text-transform:none;color:#94a3b8;font-weight:600">(tap a station in the factory to lend a hand)</span></h3>`;
     let bott = -1, bt = 0;
     for (let i = 0; i < ST.length; i++) if (s.stations[i]) { const t = G.stationTime(i, true); if (t > bt) { bt = t; bott = i; } }
@@ -421,6 +430,7 @@
       case 'research': ok = G.researchModel(+v); break;
       case 'select': ok = G.selectModel(+v); if (ok) { A.click(); U.toast(`🚘 The ${MODELS[+v].name} is now in production`, 'good'); } break;
       case 'mission': ok = U.claimMissionDialog(); break;
+      case 'prestige': U.prestigeDialog(); return true;
       case 'daily': ok = G.claimDaily(+v) > 0; if (ok) { U.bumpMoney(); A.coin(true); U.toast(`📅 Challenge complete! +2 min Turbo`, 'gold'); } break;
     }
     if (!ok && !repeat && k !== 'mission') A.error();
@@ -460,6 +470,10 @@
     setText('carsCount', f(s.produced));
     setText('modelName', G.model().name);
     setText('modelStars', '★'.repeat(G.quality()));
+    $('starChip').hidden = !s.prestige.stars;
+    if (s.prestige.stars) setText('starCount', f(s.prestige.stars));
+    // eenmalige melding wanneer de eerste herstart iets oplevert
+    if (!U._prestigeToast && G.canPrestige() && s.prestige.count === 0) { U._prestigeToast = true; U.toast('⭐ You can now start a <b>new brand</b> for a permanent income bonus! (Factory tab)', 'gold'); }
 
     // boost
     const bb = $('boostBtn');
@@ -526,7 +540,7 @@
     if (panelTimer > 0.3) {
       panelTimer = 0;
       const badges = {
-        stations: (() => { const nb = s.stations.findIndex(l => l === 0); return (nb >= 0 && G.canBuild(nb) && s.money >= ST[nb].build) || (G.canBuyLine() && s.money >= G.lineCost()); })(),
+        stations: (() => { const nb = s.stations.findIndex(l => l === 0); return (nb >= 0 && G.canBuild(nb) && s.money >= ST[nb].build) || (G.canBuyLine() && s.money >= G.lineCost()) || (G.canPrestige() && G.prestigeGain() >= Math.max(1, s.prestige.stars)); })(),
         upgrades: CFT.TECH.some(t => !s.tech[t.id] && G.reqMet(t.req) && s.money >= t.cost) || (['autoProd', 'autoSell'].some(id => s.upg[id] === 0 && s.money >= G.upgCost(id))),
         models: (() => { const mi = s.models.findIndex(x => !x); return mi > 0 && G.reqMet(MODELS[mi].req) && s.money >= MODELS[mi].research; })(),
         missions: done || (s.daily && s.daily.tasks.some(t => !t.claimed && t.p >= t.n)),
@@ -577,7 +591,8 @@
   U.toast = function (text, cls) {
     const t = document.createElement('div');
     t.className = 'toast ' + (cls || '');
-    t.innerHTML = text;
+    // tekst in één span: anders maakt de flex-layout van .toast losse kolommen van <b>-stukjes
+    t.innerHTML = `<span>${text}</span>`;
     const box = $('toasts');
     box.appendChild(t);
     while (box.children.length > 4) box.firstChild.remove();
@@ -650,6 +665,35 @@
       U.toast('🎁 Surprise: 1 minute of free Turbo!', 'good');
     }
     return true;
+  };
+
+  U.prestigeDialog = function () {
+    const s = G.s, gain = G.prestigeGain(), pr = s.prestige;
+    const info = `<div class="statlist" style="margin:8px 0 4px">
+      <span>Stars now</span><b>⭐ ${f(pr.stars)} (+${Math.round(pr.stars * 10)}%)</b>
+      <span>Stars after restart</span><b style="color:#fde047">⭐ ${f(pr.stars + gain)} (+${Math.round((pr.stars + gain) * 10)}%)</b>
+      <span>Earned this run</span><b>${fm(pr.runEarned)}</b>
+      <span>Next ⭐ at</span><b>${fm(G.prestigeNext())}</b></div>
+      <p style="font-size:13px;color:#94a3b8;margin:6px 0 0">You keep: stars, achievements, statistics and daily challenges. You start with <b>Auto Production</b>, a <b>Sales Team</b> and ${fm(G.START_MONEY + 250 * (pr.count + 1))}.<br>Resets: money, stations, upgrades, technology, models and production lines.</p>`;
+    if (!G.canPrestige()) {
+      U.showModal({ icon: '⭐', title: 'New brand', text: `Every <b>⭐ star</b> gives <b>+10% income forever</b>. ${G.prestigeUnlocked() ? `Earn ${fm(G.prestigeNext())} in this run to earn your first star.` : 'Unlocks with your second production line.'}`, html: G.prestigeUnlocked() ? info : '', buttons: [{ label: 'OK', cls: 'blue' }] });
+      return;
+    }
+    U.showModal({
+      icon: '⭐', title: `Start a new brand: +${gain} ⭐`,
+      text: `Sell this factory and start over with a famous name. Every star gives <b>+10% income forever</b>, so you grow much faster next time.`,
+      html: info,
+      buttons: [
+        { label: `⭐ Start new brand (+${gain})`, cls: 'gold', fn: () => {
+          const got = G.doPrestige();
+          if (!got) return;
+          R.cam.user = false; U.closePanel(); U.layoutPads();
+          A.unlock2(); P.happytime();
+          U.toast(`⭐ New brand! +${got} stars · income +${Math.round((G.prestigeMult() - 1) * 100)}%`, 'gold');
+        } },
+        { label: 'Not yet', cls: 'ghost' },
+      ],
+    });
   };
 
   U.offlineDialog = function (off) {

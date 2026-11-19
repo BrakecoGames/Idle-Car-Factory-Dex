@@ -39,6 +39,8 @@
       savedAt: G.now(),
       settings: { sfx: 0.8, music: 0.35, muted: false },
       tut: 0,
+      // prestige ("nieuw merk"): sterren = permanente inkomstenbonus; runEarned = verdiend sinds laatste herstart
+      prestige: { stars: 0, count: 0, runEarned: 0, best: 0 },
     };
   };
 
@@ -119,7 +121,7 @@
   };
   G.incomeMult = function () {
     const s = G.s;
-    return Math.pow(1.1, s.upg.marketing) * (1 + 0.03 * G.achCount()) * (s.tech.giga ? 2 : 1);
+    return Math.pow(1.1, s.upg.marketing) * (1 + 0.03 * G.achCount()) * (s.tech.giga ? 2 : 1) * G.prestigeMult();
   };
   G.stageFactor = function (stage) {
     let f = 1;
@@ -404,6 +406,7 @@
   G.earn = function (amount, fromSale) {
     G.s.money += amount;
     G.s.totalEarned += amount;
+    G.s.prestige.runEarned += amount;
     if (fromSale) {
       G.rt.log.push([G.rt.t, amount]);
       if (G.rt.log.length > 3000) G.rt.log.splice(0, 1000);
@@ -681,6 +684,8 @@
     G.s.tech = Object.assign({}, data.tech || {});
     G.s.ach = Object.assign({}, data.ach || {});
     G.s.building = Object.assign({ st: null, line: null }, data.building || {});
+    // migratie: saves van vóór het prestige-systeem tellen alles wat ooit verdiend is mee voor de eerste herstart
+    G.s.prestige = Object.assign(G.newState().prestige, data.prestige || { runEarned: +data.totalEarned || 0 });
     if (!Array.isArray(G.s.models)) G.s.models = G.newState().models;
     while (G.s.models.length < MODELS.length) G.s.models.push(false);
     G.s.models[0] = true;
@@ -726,6 +731,34 @@
     const rate = G.lineRate(true) * G.s.lines;
     return { secs, amount: rate * secs * G.expectedProfit() * G.offlineEff(), cars: Math.floor(rate * secs) };
   };
+  // ================= Prestige: nieuw merk starten =================
+  G.PRESTIGE_BASE = 1e9;      // verdiensten per run voor de eerste ster
+  G.PRESTIGE_BONUS = 0.1;     // +10% inkomsten per ster
+  G.prestigeMult = () => 1 + G.PRESTIGE_BONUS * G.s.prestige.stars;
+  // sterren die je in deze run verdient (wortelcurve: eerste ster snel, daarna steeds meer nodig)
+  G.prestigeGain = () => Math.floor(Math.sqrt(Math.max(0, G.s.prestige.runEarned) / G.PRESTIGE_BASE));
+  G.prestigeNext = () => Math.pow(G.prestigeGain() + 1, 2) * G.PRESTIGE_BASE;
+  G.prestigeUnlocked = () => G.s.lines >= 2 || G.s.prestige.count > 0;
+  G.canPrestige = () => G.prestigeUnlocked() && G.prestigeGain() >= 1;
+  G.prestigeStartMoney = () => G.START_MONEY + 250 * G.s.prestige.count;
+  G.doPrestige = function () {
+    if (!G.canPrestige()) return 0;
+    const old = G.s, gain = G.prestigeGain(), fresh = G.newState();
+    // blijft: prestaties, statistieken, levenslange totalen, instellingen, dagelijkse uitdagingen, lopende Turbo
+    for (const k of ['totalEarned', 'produced', 'sold', 'golden', 'ach', 'stats', 'settings', 'daily', 'boostUntil', 'tut']) fresh[k] = old[k];
+    fresh.prestige = { stars: old.prestige.stars + gain, count: old.prestige.count + 1, runEarned: 0, best: Math.max(old.prestige.best, gain) };
+    G.s = fresh;
+    // reputatie: automatische productie en verkoop vanaf het begin, meer startgeld
+    G.s.upg.autoProd = 1; G.s.upg.autoSell = 1;
+    G.s.money = G.prestigeStartMoney();
+    G.s.savedAt = G.now();
+    G.resetRuntime();
+    G.emit('imported');
+    G.emit('prestige', gain);
+    G.save();
+    return gain;
+  };
+
   G.reset = function () {
     G.s = G.newState();
     G.resetRuntime();

@@ -43,6 +43,8 @@ button { font: inherit; color: inherit; border: 0; cursor: pointer; background: 
 .save-info { font-size: 13px; color: var(--muted); margin: 0 0 10px; }
 .save-err { color: #fca5a5; font-size: 13px; min-height: 18px; margin: 6px 0 0; }
 .chip-btn:hover { background: rgba(71,85,105,0.9); }
+.star-chip { color: #fde68a; border-color: rgba(251,191,36,0.45); background: rgba(120,53,15,0.55); }
+.item.prestige { border-color: rgba(251,191,36,0.55); background: linear-gradient(135deg, rgba(120,53,15,0.55), rgba(30,41,59,0.9)); }
 .stars { color: var(--gold); letter-spacing: -1px; font-size: 12px; }
 .hud-right { display: flex; gap: 8px; align-items: center; }
 .icon-btn { width: 40px; height: 40px; border-radius: 12px; background: rgba(51,65,85,0.75); border: 1px solid var(--line); font-size: 18px; display: grid; place-items: center; }
