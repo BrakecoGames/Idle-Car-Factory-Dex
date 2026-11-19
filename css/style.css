@@ -240,6 +240,7 @@ button { font: inherit; color: inherit; border: 0; cursor: pointer; background: 
   .mission-top { font-size: 11px; }
   .vip-btn { top: auto; bottom: 200px; right: 10px; }
   #toasts { top: auto; bottom: 200px; }
+  .toast { padding: 8px 12px; font-size: 13px; }
   .produce-label { font-size: 9px; letter-spacing: 0; }
   .produce-btn { width: 84px; height: 84px; }
   .sellall-btn { padding: 10px 12px; font-size: 14px; }
@@ -263,7 +264,9 @@ button { font: inherit; color: inherit; border: 0; cursor: pointer; background: 
   #bottom { align-items: stretch; }
   #tabs { align-self: center; }
   .vip-btn { top: 64px; }
-  #toasts { top: 66px; }
+  #toasts { top: 66px; left: auto; right: 100px; transform: none; width: min(50vw, 360px); }
+  .toast { padding: 6px 12px; font-size: 13px; }
+  .hint { font-size: 13px; padding: 7px 11px; max-width: 220px; }
   #nextCard { display: none; }
   .produce-btn { width: 74px; height: 74px; }
   #tabs { height: 52px; }

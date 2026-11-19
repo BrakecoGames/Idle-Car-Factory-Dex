@@ -159,3 +159,10 @@ Volgende focus: retentie (prestige-systeem).
 | Stabiliteit | 9/10 | test 71/71 |
 | Mobiele ervaring | 7.5/10 | test + screenshots |
 | CrazyGames-geschiktheid | 8/10 | inschatting |
+
+## Iteratie 11 — 2D-fallback-controle en compactere meldingen
+
+- **Probleem:** onbekend of de 2D-fallback (geen WebGL) nog werkte na de wijzigingen; op kleine schermen bedekten toasts en hints een groot deel van de fabriek en overlapte de melding de missiekaart.
+- **Verbetering:** 2D-fallback getest (`?2d=1`, desktop/staand/liggend: produceren, verkopen, geen fouten — werkt). Toasts op kleine schermen kleiner, max. 3 tegelijk; liggend rechts uitgelijnd naast de missiekaart; hint compacter.
+- **Bestanden:** `css/style.css`, `js/ui.js`
+- **Tests:** 2D-smoketest op 3 formaten, screenshots, playtest.

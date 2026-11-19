@@ -600,7 +600,7 @@
     t.innerHTML = `<span>${text}</span>`;
     const box = $('toasts');
     box.appendChild(t);
-    while (box.children.length > 4) box.firstChild.remove();
+    while (box.children.length > 3) box.firstChild.remove();
     setTimeout(() => t.remove(), 3100);
   };
 
