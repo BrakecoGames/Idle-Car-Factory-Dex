@@ -24,7 +24,7 @@
     $('panelClose').addEventListener('click', () => { A.click(); U.closePanel(); });
     $('buyMode').addEventListener('click', e => {
       const b = e.target.closest('button'); if (!b) return;
-      U.buyMode = b.dataset.mode === 'max' ? 'max' : +b.dataset.mode;
+      U.buyMode = b.dataset.mode === 'max' || b.dataset.mode === 'next' ? b.dataset.mode : +b.dataset.mode;
       document.querySelectorAll('#buyMode button').forEach(x => x.classList.toggle('on', x === b));
       A.click(); U.refreshPanel(true);
     });

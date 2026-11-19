@@ -114,3 +114,10 @@ Volgende focus: retentie (prestige-systeem).
 - **Bestanden:** `js/game.js`, `js/sdk.js`, `js/main.js`, `js/ui.js`
 - **Tests:** Node-unit-test met nep-opslag (alleen lokaal, beide, nieuwere cloud-save, corrupte cloud, gooiende cloud), `?cg=1`-opstart (SDK-host onbereikbaar → nette fallback, geen fouten), playtest 69/69.
 - **Niet getest:** de echte CrazyGames Data-module (SDK-host is vanuit deze testomgeving niet bereikbaar). Controleer dit in de CrazyGames-QA-tool vóór publicatie.
+
+## Iteratie 7 — Koopmodus NEXT
+
+- **Probleem:** de belangrijkste keuze in de middenfase (×2-mijlpalen op lv 10/25/50/100…) vroeg om herhaald tikken of rekenen met ×10/MAX.
+- **Verbetering:** nieuwe koopmodus **NEXT** naast ×1/×10/MAX: koopt precies tot de volgende mijlpaal (na de laatste mijlpaal: +1).
+- **Bestanden:** `index.html`, `js/ui.js`, `js/game.js`
+- **Tests:** Node-unit-check (lv 7 → 10 → volgende 15; na lv 400 → 1), screenshots paneelkop staand en liggend (past), playtest.

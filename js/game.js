@@ -238,6 +238,7 @@
   // mode: 1, 10, 'max', 'next' (tot volgende mijlpaal)
   G.stationBuyCount = function (i, mode) {
     if (mode === 'max') return Math.max(1, G.stationMaxAffordable(i));
+    if (mode === 'next') { const l = G.s.stations[i], m = G.nextMilestone(l); return m ? m - l : 1; }
     return mode;
   };
   G.upgradeStation = function (i, mode) {
