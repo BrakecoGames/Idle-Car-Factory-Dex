@@ -789,6 +789,9 @@
     G.s.money = G.prestigeStartMoney();
     G.s.savedAt = G.now();
     G.resetRuntime();
+    // missies over levenslange totalen die al gehaald zijn overslaan (geen "maak je eerste auto" voor een veteraan)
+    const LIFETIME = ['produce', 'sell', 'earn', 'golden'];
+    while (G.s.mission < CFT.MISSIONS.length && LIFETIME.includes(CFT.MISSIONS[G.s.mission].t) && G.missionDone()) G.s.mission++;
     G.emit('imported');
     G.emit('prestige', gain);
     G.save();

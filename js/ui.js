@@ -561,7 +561,8 @@
   U.updateHint = function () {
     const s = G.s, hint = $('hint');
     const app = $('app').getBoundingClientRect();
-    const above = (el, gap) => { const r = el.getBoundingClientRect(); return [r.left - app.left + r.width / 2, r.top - app.top - gap]; };
+    // doel: [x, bovenkant - marge, onderkant + marge]; de hint staat erboven of klapt om naar eronder
+    const above = (el, gap) => { const r = el.getBoundingClientRect(); return [r.left - app.left + r.width / 2, r.top - app.top - gap, r.bottom - app.top + gap]; };
     let target = null, text = '';
     if (!$('modal').hidden) { hint.hidden = true; return; }
     if (s.tut === 0) {
@@ -572,7 +573,7 @@
       if (s.sold > 0 || s.upg.autoSell) s.tut = 2;
       else {
         const lot = R.hits.find(h => h.kind === 'lot');
-        if (lot) { target = [lot.x + lot.w / 2, lot.y - 34]; text = 'Tap the car to sell it!'; }
+        if (lot) { target = [lot.x + lot.w / 2, lot.y - 34, lot.y + lot.h + 12]; text = 'Tap the car to sell it!'; }
       }
     }
     if (s.tut === 2) {
@@ -582,13 +583,26 @@
         else { target = above(document.querySelector('#tabs [data-tab="stations"]'), 14); text = 'Open your factory and buy your first upgrade'; }
       }
     }
+    if (s.tut === 3) {
+      // tikken om te helpen uitleggen zolang er nog met de hand gewerkt wordt
+      if (s.stats.taps >= 3 || s.upg.autoProd > 0 || s.prestige.count > 0) s.tut = 4;
+      else if (!U.tab) {
+        const line = G.rt.lines[0];
+        const h = R.hits.find(x => x.kind === 'station' && x.li === 0 && line.cars.some(c => c.proc === x.i));
+        if (h) { target = [h.x + h.w / 2, h.y - 8, h.y + h.h + 8]; text = 'Tap a working machine to help it go faster!'; }
+      }
+    }
     if (target) {
       hint.hidden = false;
       hint.textContent = text;
       const x = Math.max(140, Math.min(app.width - 140, target[0]));
-      // nooit over de bovenbalk heen
-      const minTop = $('hud').offsetHeight + hint.offsetHeight + 6;
-      hint.style.left = x + 'px'; hint.style.top = Math.max(minTop, target[1]) + 'px';
+      // nooit over de bovenbalk of de missiekaart heen: dan onder het doel tonen
+      let limit = $('hud').getBoundingClientRect().bottom - app.top;
+      const sc = $('sideCards').getBoundingClientRect(), hw = hint.offsetWidth / 2;
+      if (sc.height && x + hw > sc.left - app.left && x - hw < sc.right - app.left) limit = Math.max(limit, sc.bottom - app.top);
+      const below = target[1] - hint.offsetHeight < limit + 4 && target[2] != null;
+      hint.classList.toggle('below', below);
+      hint.style.left = x + 'px'; hint.style.top = (below ? target[2] : Math.max(limit + hint.offsetHeight + 4, target[1])) + 'px';
     } else hint.hidden = true;
   };
 

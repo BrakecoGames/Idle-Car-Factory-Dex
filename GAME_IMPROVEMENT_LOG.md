@@ -166,3 +166,17 @@ Volgende focus: retentie (prestige-systeem).
 - **Verbetering:** 2D-fallback getest (`?2d=1`, desktop/staand/liggend: produceren, verkopen, geen fouten — werkt). Toasts op kleine schermen kleiner, max. 3 tegelijk; liggend rechts uitgelijnd naast de missiekaart; hint compacter.
 - **Bestanden:** `css/style.css`, `js/ui.js`
 - **Tests:** 2D-smoketest op 3 formaten, screenshots, playtest.
+
+## Iteratie 12 — Missies na een nieuw merk
+
+- **Probleem:** na een herstart begon de missieketen weer met "Produce your first car" (+$15) — onzinnig voor een ervaren speler.
+- **Verbetering:** missies over levenslange totalen (produceren, verkopen, verdienen, gouden auto's) die al gehaald zijn, worden bij een herstart overgeslagen; bouw- en upgrademissies blijven als gids met beloning.
+- **Bestanden:** `js/game.js`
+- **Tests:** Node-check (start na herstart bij "Upgrade your first robot"), playtest.
+
+## Iteratie 13 — Tutorial: tikken om te helpen + slimmere hint-plaatsing
+
+- **Probleem:** de mechaniek "tik op een werkend station = 30% sneller" stond alleen in een paneelkop; nieuwe spelers ontdekken hem niet. Bovendien werden hints onder de HUD geklemd en bedekten ze dan de "Claim reward!"-knop.
+- **Verbetering:** vierde tutorialstap na de eerste upgrade wijst naar een werkende machine ("Tap a working machine to help it go faster!") tot de speler 3× getikt heeft of automatische productie koopt (overgeslagen voor terugkerende merken). Hints klappen om naar *onder* het doel (pijl omhoog) als er erboven geen ruimte is door HUD of missiekaart.
+- **Bestanden:** `js/ui.js`, `css/style.css`
+- **Tests:** browser-scenario (hint verschijnt, geplaatst onder de machine, tikken telt), playtest 71/71.
