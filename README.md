@@ -38,7 +38,10 @@ js/audio.js           Gesynthetiseerde geluidseffecten + achtergrondmuziek (WebA
 js/sdk.js             CrazyGames SDK v3-wrapper met lokale testmodus
 js/main.js            Opstarten, game-loop, autosave, koppeling van events aan effecten
 assets/               Icoon en cover-afbeeldingen (1920×1080, 800×1200, 800×800)
-tools/simulate.js     Headless balanssimulatie (Node.js)
+tools/simulate.js     Headless balanssimulatie (Node.js); PRESTIGE_AT=<min> test een herstart
+tools/playtest.js     Geautomatiseerde browser-playtest (Playwright): desktop, mobiel staand/liggend, saves
+tools/perftest.js     Frametijd- en geheugenlekmeting in een volle fabriek
+GAME_IMPROVEMENT_LOG.md  Logboek van de verbeterloop (per iteratie: probleem, wijziging, tests, scores)
 ```
 
 ## Gameplay in het kort
@@ -51,6 +54,9 @@ tools/simulate.js     Headless balanssimulatie (Node.js)
 - **Uitbreiden:** tot 4 productielijnen naast elkaar in een groeiende fabriekshal.
 - **Idle:** *Automatische productie* + *Verkoopteam* laten de fabriek zelf draaien; offline inkomsten bij terugkeer (50% tot 2 uur, met *Nachtploeg* 100% tot 8 uur).
 - **Beloningen:** doorlopende missies (altijd één actief doel), 3 dagelijkse uitdagingen, 20 prestaties (+3% inkomsten per stuk), gouden auto's (×10), VIP-kopers en gratis Turbo-verrassingen.
+- **Nieuw merk (prestige):** vanaf productielijn 2 kun je opnieuw beginnen voor ⭐ sterren (⌊√(verdiend deze run / $1B)⌋). Elke ster = +10% inkomsten voor altijd. Je houdt prestaties, statistieken en dagelijkse uitdagingen en start met automatische productie en verkoop. Merk-mijlpalen (5 / 25 / 100 / 400 / 1500 ⭐) laten je elke nieuwe start verder beginnen.
+- **Dagbonus:** elke dag dat je terugkomt een bonus (dag 1–7 oplopend, plus Turbo); een dag overslaan zet de reeks terug op dag 1.
+- **Koopmodus NEXT:** koopt een station precies tot de volgende ×2-mijlpaal.
 - **Advertenties (optioneel):** 2× Turbo voor 3 minuten, VIP-bod ×3, offline inkomsten ×2, bouw direct klaar. Het spel is volledig speelbaar zonder ooit een advertentie te kijken.
 
 ## Balans
@@ -59,8 +65,8 @@ tools/simulate.js     Headless balanssimulatie (Node.js)
 
 | Tijd | Gebeurtenis |
 |---|---|
-| 0:16 | Eerste auto verkocht |
-| 0:21 | Tweede station (motor) |
+| 0:08 | Eerste auto verkocht (auto's rijden versneld langs nog lege bouwplaatsen) |
+| 0:17 | Tweede station (motor) |
 | ~1:25 | Automatische productie |
 | ~3:25 | Verkoopteam (automatisch verkopen) |
 | ~2:15 | Eerste nieuw model (Sedan) |
@@ -71,7 +77,7 @@ tools/simulate.js     Headless balanssimulatie (Node.js)
 | 6:20 – 10:20 | Sportwagen, lijn 3, Luxe, AI-kwaliteitscontrole |
 | 28:00 | Vierde lijn |
 
-Elektrisch en Hypercar zijn langetermijndoelen (uren). Alle kosten en effecten staan in `js/data.js` en de formules in `js/game.js`.
+Elektrisch en Hypercar zijn langetermijndoelen (uren). Rond 45–50 minuten (bot) stagneert een run; dan stelt het spel een nieuw merk voor (± +3000% inkomsten). Alle kosten en effecten staan in `js/data.js` en de formules in `js/game.js`.
 
 ## 3D-weergave (three.js)
 
@@ -116,7 +122,14 @@ Er kan één station en één productielijn tegelijk in aanbouw zijn. Tik op de 
 
 ## Testen
 
-Getest in Chromium (Playwright) op 1366×768, 1920×1080 en 390×844 (mobiel, touch):
+```bash
+python3 -m http.server 8123 &
+node tools/playtest.js      # 71 checks: desktop, iPhone staand en liggend, prestige, saves, migratie, dagbonus
+node tools/perftest.js      # JS-tijd per frame + lekcontrole met 4 volle lijnen
+node tools/simulate.js 30   # balans
+```
+
+Eerder handmatig getest in Chromium (Playwright) op 1366×768, 1920×1080 en 390×844 (mobiel, touch):
 
 - produceren, door de lijn rijden, tikken-om-te-verkopen, *Verkoop alles*
 - bouwen en upgraden van stations (×1 / ×10 / MAX, ingedrukt houden), bedrijfsupgrades, technologie, modellen, lijnen
@@ -136,14 +149,15 @@ Vastloopbeveiliging: productiekosten worden pas bij verkoop verrekend, dus je ku
    - `requestAd('rewarded')`: spel en geluid pauzeren bij `adStarted`, hervatten bij `adFinished`/`adError`
    - `happytime()` bij grote momenten (nieuw model, nieuwe lijn, gouden auto)
    - respecteert de CrazyGames-instelling `muteAudio`
+   - **Data-module:** saves worden ook naar `SDK.data` geschreven (gesynchroniseerd met het CrazyGames-account); bij laden wint de nieuwste save van lokaal en cloud. Niet getest tegen de echte SDK — controleer dit in de CrazyGames-QA-tool.
 3. Upload de covers uit `assets/` als thumbnails.
 4. Het spel is responsive (liggend en staand) en heeft een eigen volledig-scherm-knop in Instellingen.
 
 ## Mogelijke volgende stappen
 
 - Engelse vertaling (alle teksten staan in `data.js` en `ui.js`)
-- Opslag via de CrazyGames Data-module voor synchronisatie tussen apparaten
-- Prestige-systeem ("nieuw merk starten") voor nog langere speelduur
+- Echte FPS meten op een goedkope Android-telefoon en een iPhone (de testbrowser rendert in software)
+- Uitgeefbare sterren (keuzes tussen merk-voordelen) voor meer strategische diepgang
 
 ## Copyright
 

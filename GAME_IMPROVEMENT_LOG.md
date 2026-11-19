@@ -187,3 +187,35 @@ Volgende focus: retentie (prestige-systeem).
 - **Verbetering:** vaste merk-mijlpalen die elke nieuwe start versnellen: 5 ⭐ motor + carrosserie gebouwd, 25 ⭐ 5 stations, 100 ⭐ Robot Arms 2.0 + Night Shift behouden, 400 ⭐ Cruiser + Trailblazer ontwikkeld, 1500 ⭐ tweede productielijn. Getoond in de prestige-kaart (volgende perk) en de dialoog (behaald + eerstvolgende twee). Modal-knoppen blijven onderin plakken; compactere modals bij schermhoogte < 700 px.
 - **Bestanden:** `js/data.js`, `js/game.js`, `js/ui.js`, `css/style.css`
 - **Tests:** Node-check (31 ⭐ → 5 stations; 2031 ⭐ → alle perks), sim met herstart, screenshot dialoog op iPhone 13 (knoppen zichtbaar), playtest 71/71.
+
+## Iteratie 15 — Documentatie en bundel
+
+- **Probleem:** README beschreef de nieuwe functies, testtools en balans niet; gebundelde versie niet gecontroleerd.
+- **Verbetering:** README bijgewerkt (prestige, merk-mijlpalen, dagbonus, NEXT, Data-module, testcommando's, balanstabel). `tools/build-single.py` gedraaid en de gebundelde HTML in de browser getest (3D, alle data aanwezig, geen fouten).
+- **Bestanden:** `README.md`
+
+---
+
+## Eindscores (na 15 iteraties)
+
+| Onderdeel | Start | Eind | Basis |
+|---|---|---|---|
+| Eerste indruk | 6.5 | 7.5 | test (eerste verkoop 16 s → 8 s) + inschatting |
+| Gameplay | 7 | 7.5 | inschatting |
+| Visuele kwaliteit | 7 | 7.5 | screenshots (layout, meldingen, dialogen) |
+| Gebruiksvriendelijkheid | 6.5 | 8 | test (tikbug, hints, NEXT, modals) |
+| Progressie | 7 | 8 | sim (prestige + mijlpalen lossen plateau op) |
+| Retentiepotentieel | 5 | 8 | inschatting (prestige, mijlpalen, dagbonus, cloudsave) |
+| Performance | 7 | 7.5 | gemeten JS-tijd/lekken; GPU/FPS niet meetbaar |
+| Stabiliteit | 8 | 9 | test (71/71, 2D-fallback, bundel, geen JS-fouten) |
+| Mobiele ervaring | 5.5 | 8 | test + screenshots (staand en liggend) |
+| CrazyGames-geschiktheid | 7 | 8 | inschatting (Data-module, optionele ads, happytime) |
+
+## Waarom de loop stopt na 15 iteraties
+
+De grootste problemen uit de analyse zijn opgelost. De resterende verbeteringen vragen menselijke input of hebben meer risico dan voordeel in deze omgeving:
+
+1. **Echte apparaten** — FPS en touch-gevoel kunnen alleen op echte telefoons gemeten worden (de testbrowser rendert in software).
+2. **Echte CrazyGames SDK** — advertenties en de Data-module zijn hier niet bereikbaar; test in de CrazyGames-QA-tool.
+3. **Balanswijzigingen in de kern** (bijv. hogere doorvoerplafonds) veranderen het tempo van het hele spel en vragen speeldata van echte spelers.
+4. **Uitgeefbare sterren / extra content** is een ontwerpkeuze voor de makers.
